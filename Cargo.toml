@@ -4,6 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["tutor-nodb"]
+members = ["tutor-nodb", "tutor-db"]
 
 [dependencies]
+actix-web = "4.3.1"
+actix-rt = "2.8.0"
+uuid = {version = "1.4.1", features = ["v4", "serde"]}
+chrono = {version = "0.4.26", features = ["serde"]}
+serde = {version = "1.0.177", features = ["derive"]}
+log = "0.4.19"
+env_logger = "0.10.0"
+dotenv = "0.15.0"
+sqlx = {version = "0.7.1", features = ["postgres", "runtime-tokio-native-tls", "macros", "chrono", "uuid"]}
+openssl = {version = "0.10.55", features = ["vendored"]}

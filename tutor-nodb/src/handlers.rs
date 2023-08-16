@@ -1,5 +1,6 @@
 use actix_web::{HttpResponse, web};
 use chrono::Utc;
+use log::info;
 use uuid::Uuid;
 use crate::models::Course;
 use crate::state::AppState;
@@ -30,9 +31,24 @@ pub async fn new_course(new_course: web::Json<Course>, app_state: web::Data<AppS
 
 pub async fn get_courses_for_tutor(app_state: web::Data<AppState>, params: web::Path<Uuid>) -> HttpResponse {
     let tutor_id = params.into_inner();
-    let filter_courses = app_state.courses.lock().unwrap().clone().into_iter().filter(|course| course.tutor_id == tutor_id).collect::<Vec<Course>>();
+    let tutors_courses = app_state.courses.lock().unwrap().clone().into_iter().filter(|course| course.tutor_id == tutor_id).collect::<Vec<Course>>();
 
-    HttpResponse::Ok().json(filter_courses)
+    HttpResponse::Ok().json(tutors_courses)
+}
+
+pub async fn get_course_detail(app_state: web::Data<AppState>, params: web::Path<(Uuid, Uuid)>) -> HttpResponse {
+    let (tutor_id, course_id) = params.into_inner();
+    let course = app_state.courses.lock().unwrap().clone().into_iter().find(|course| course.tutor_id == tutor_id && course.course_id == Some(course_id));
+
+    match course {
+        None => {
+            info!("Course not found: {course_id}. Tutor: {tutor_id}");
+            HttpResponse::NotFound().finish()
+        }
+        Some(course) => {
+            HttpResponse::Ok().json(course)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -89,6 +105,37 @@ mod test {
 
         let tutor_id: web::Path<Uuid> = web::Path::from( Uuid::from_str("15d0830e-34d2-4914-873d-81725a5bc431").unwrap());
         let resp = get_courses_for_tutor(app_state, tutor_id).await;
+        assert_eq!(resp.status(), StatusCode::OK);
+    }
+
+    #[actix_rt::test]
+    async fn get_course_detail_not_found() {
+        let app_state: web::Data<AppState> = web::Data::new(AppState {
+            health_check_response: "".to_string(),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![]),
+        });
+
+        let params: web::Path<(Uuid, Uuid)> = web::Path::from( (Uuid::from_str("15d0830e-34d2-4914-873d-81725a5bc431").unwrap(), Uuid::from_str("15ebebf7-8aa9-48b0-8a22-45371bc88ab4").unwrap()));
+        let resp = get_course_detail(app_state, params).await;
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[actix_rt::test]
+    async fn get_course_detail_found() {
+        let app_state: web::Data<AppState> = web::Data::new(AppState {
+            health_check_response: "".to_string(),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![Course {
+                tutor_id: Uuid::from_str("15d0830e-34d2-4914-873d-81725a5bc431").unwrap(),
+                course_id: Some(Uuid::from_str("15ebebf7-8aa9-48b0-8a22-45371bc88ab4").unwrap()),
+                course_name: "some name".to_string(),
+                posted_time: Some(Utc::now().naive_utc()),
+            }]),
+        });
+
+        let params: web::Path<(Uuid, Uuid)> = web::Path::from( (Uuid::from_str("15d0830e-34d2-4914-873d-81725a5bc431").unwrap(), Uuid::from_str("15ebebf7-8aa9-48b0-8a22-45371bc88ab4").unwrap()));
+        let resp = get_course_detail(app_state, params).await;
         assert_eq!(resp.status(), StatusCode::OK);
     }
 }

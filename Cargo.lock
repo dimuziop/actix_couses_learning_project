@@ -2181,6 +2181,18 @@ dependencies = [
 [[package]]
 name = "tutor-db"
 version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "actix-web",
+ "chrono",
+ "dotenv",
+ "env_logger",
+ "log",
+ "openssl",
+ "serde",
+ "sqlx",
+ "uuid",
+]
 
 [[package]]
 name = "tutor-nodb"

@@ -6,7 +6,7 @@ create table ezy_course_c4
     course_id uuid NOT NULL PRIMARY KEY,
     tutor_id uuid NOT NULL,
     course_name varchar(140) NOT NULL,
-    posted_time timestamp default now()
+    posted_time timestamp NOT NULL default now()
 );
 
 /**

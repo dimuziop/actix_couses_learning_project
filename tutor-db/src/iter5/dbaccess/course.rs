@@ -1,8 +1,7 @@
-use log::debug;
 use sqlx::PgPool;
 use uuid::Uuid;
 use crate::errors::EzyTutorError;
-use crate::models::Course;
+use crate::models::course::Course;
 
 pub async fn get_courses_by_tutor(pool: &PgPool, tutor_id: Uuid) -> Result<Vec<Course>, EzyTutorError> {
     let course_rows = sqlx::query!(

@@ -2,22 +2,22 @@ use std::{env, io};
 use std::sync::Mutex;
 use actix_web::{App, HttpServer, web};
 use dotenv::dotenv;
-use log::debug;
+use log::{debug, error};
 use sqlx::PgPool;
 use crate::routes::{course_routes, general_routes};
 use crate::state::AppState;
 
-#[path = "../iter4/handlers.rs"]
+#[path = "../iter5/handlers/mod.rs"]
 mod handlers;
-#[path = "../iter4/routes.rs"]
+#[path = "../iter5/routes.rs"]
 mod routes;
-#[path = "../iter4/state.rs"]
+#[path = "../iter5/state.rs"]
 mod state;
-#[path = "../iter4/models.rs"]
+#[path = "../iter5/models/mod.rs"]
 mod models;
-#[path = "../iter4/db_access.rs"]
-mod db_access;
-#[path = "../iter4/errors.rs"]
+#[path = "../iter5/dbaccess/mod.rs"]
+mod dbaccess;
+#[path = "../iter5/errors.rs"]
 mod errors;
 
 #[actix_rt::main]
@@ -44,9 +44,14 @@ async fn main() -> io::Result<()> {
             )
     };
 
-    HttpServer::new(app).bind("127.0.0.1:3000")?.run().await;
-
-    Ok(())
-
-
+    match HttpServer::new(app).bind("127.0.0.1:3000")?.run().await {
+        Ok(_) => {
+            debug!("👍");
+            Ok(())
+        }
+        Err(e) => {
+            error!("{}", e);
+            Err(e)
+        }
+    }
 }

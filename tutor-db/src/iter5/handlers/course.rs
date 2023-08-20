@@ -1,19 +1,11 @@
+use super::super::errors::EzyTutorError;
+use super::super::
+state::AppState;
 use actix_web::{HttpResponse, web};
 use chrono::Utc;
 use uuid::Uuid;
-use crate::models::{Course, CourseDto};
-use crate::state::AppState;
-use crate::db_access;
-use crate::errors::EzyTutorError;
-
-pub async fn health_check_handler(app_state: web::Data<AppState>) -> HttpResponse {
-    let health_check_response = &app_state.health_check_response;
-    let mut visit_count = app_state.visit_count.lock().unwrap();
-
-    let response = format!("{} {} times", health_check_response, visit_count);
-    *visit_count += 1;
-    HttpResponse::Ok().json(&response)
-}
+use crate::dbaccess::course;
+use crate::models::course::{Course, CourseDto};
 
 pub async fn new_course(course_dto: web::Json<CourseDto>, app_state: web::Data<AppState>) -> Result<HttpResponse, EzyTutorError> {
     let dto: CourseDto = course_dto.into();
@@ -24,18 +16,18 @@ pub async fn new_course(course_dto: web::Json<CourseDto>, app_state: web::Data<A
         posted_time: Utc::now().naive_utc(),
 
     };
-    let course = db_access::new_course(&app_state.db, insert_course).await?;
+    let course = course::new_course(&app_state.db, insert_course).await?;
     Ok(HttpResponse::Created().json(course))
 }
 
 pub async fn get_courses_for_tutor(app_state: web::Data<AppState>, params: web::Path<Uuid>) -> Result<HttpResponse, EzyTutorError> {
-    let courses = db_access::get_courses_by_tutor(&app_state.db, params.into_inner()).await?;
+    let courses = course::get_courses_by_tutor(&app_state.db, params.into_inner()).await?;
     Ok(HttpResponse::Ok().json(courses))
 }
 
 pub async fn get_course_detail(app_state: web::Data<AppState>, params: web::Path<(Uuid, Uuid)>) -> Result<HttpResponse, EzyTutorError> {
     let (tutor_id, course_id) = params.into_inner();
-    let course = db_access::get_course(&app_state.db, tutor_id, course_id).await?;
+    let course = course::get_course(&app_state.db, tutor_id, course_id).await?;
    Ok(HttpResponse::Ok().json(course))
 }
 
@@ -44,17 +36,17 @@ mod test {
     use std::env;
     use std::str::FromStr;
     use std::sync::Mutex;
-    use actix_web::body::MessageBody;
     use actix_web::http::StatusCode;
     use actix_web::ResponseError;
     use dotenv::dotenv;
-    use log::debug;
     use sqlx::PgPool;
     use super::*;
 
     #[actix_rt::test]
     async fn post_course_test() {
         dotenv().ok();
+        env::set_var("RUST_LOG", "debug");
+        env_logger::init();
 
         let database_url = env::var("DATABASE_URL").expect("Database url is not set");
         let db_pool = PgPool::connect(&database_url).await.unwrap();

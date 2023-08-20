@@ -5,16 +5,25 @@ use actix_web::{HttpResponse, web};
 use chrono::Utc;
 use uuid::Uuid;
 use crate::dbaccess::course;
-use crate::models::course::{Course, CourseDto};
+use crate::models::course::{Course, CreateCourseDto};
 
-pub async fn new_course(course_dto: web::Json<CourseDto>, app_state: web::Data<AppState>) -> Result<HttpResponse, EzyTutorError> {
-    let dto: CourseDto = course_dto.into();
+pub async fn new_course(course_dto: web::Json<CreateCourseDto>, app_state: web::Data<AppState>) -> Result<HttpResponse, EzyTutorError> {
+    let dto: CreateCourseDto = course_dto.into();
     let insert_course = Course {
-        course_id: Uuid::new_v4(),
+        id: Uuid::new_v4(),
         tutor_id: dto.tutor_id,
-        course_name: dto.course_name.clone(),
+        name: dto.name.clone(),
+        description: None,
+        format: None,
+        structure: None,
+        duration: None,
+        price: None,
+        language: None,
+        level: None,
         posted_time: Utc::now().naive_utc(),
-
+        created_at: Utc::now().naive_utc(),
+        updated_at: None,
+        deleted_at: None,
     };
     let course = course::new_course(&app_state.db, insert_course).await?;
     Ok(HttpResponse::Created().json(course))
@@ -29,6 +38,18 @@ pub async fn get_course_detail(app_state: web::Data<AppState>, params: web::Path
     let (tutor_id, course_id) = params.into_inner();
     let course = course::get_course(&app_state.db, tutor_id, course_id).await?;
    Ok(HttpResponse::Ok().json(course))
+}
+
+pub async fn update_course_detail(app_state: web::Data<AppState>, params: web::Path<(Uuid, Uuid)>) -> Result<HttpResponse, EzyTutorError> {
+    let (tutor_id, course_id) = params.into_inner();
+    let course = course::get_course(&app_state.db, tutor_id, course_id).await?;
+    Ok(HttpResponse::Ok().json(course))
+}
+
+pub async fn soft_delete_course(app_state: web::Data<AppState>, params: web::Path<(Uuid, Uuid)>) -> Result<HttpResponse, EzyTutorError> {
+    let (tutor_id, course_id) = params.into_inner();
+    let course = course::get_course(&app_state.db, tutor_id, course_id).await?;
+    Ok(HttpResponse::Ok().json(course))
 }
 
 #[cfg(test)]
@@ -57,9 +78,16 @@ mod test {
             db: db_pool
         });
 
-        let course = web::Json(CourseDto {
+        let course = web::Json(CreateCourseDto {
             tutor_id: Uuid::from_str("d709c2c9-eeb8-4b6b-a63d-25ef38c78e61").unwrap(),
-            course_name: "Some course name".into(),
+            name: "Some course name".into(),
+            description: None,
+            format: None,
+            structure: None,
+            duration: None,
+            price: None,
+            language: None,
+            level: None,
         });
 
         let resp = new_course(course, app_state).await.unwrap();

@@ -1,11 +1,9 @@
 use actix_web::web;
-use actix_web::web::Json;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::errors::EzyTutorError;
 
-#[derive(Deserialize, Serialize, Debug, Clone, sqlx::FromRow)]
+#[derive(Deserialize, Serialize, Debug, Clone, sqlx::FromRow, PartialOrd, PartialEq)]
 pub struct Course {
     pub id: Uuid,
     pub tutor_id: Uuid,
@@ -20,6 +18,7 @@ pub struct Course {
     pub posted_time: NaiveDateTime,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    #[serde(skip_serializing)]
     pub deleted_at: Option<NaiveDateTime>,
 }
 

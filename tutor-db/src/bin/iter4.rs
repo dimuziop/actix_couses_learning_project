@@ -7,14 +7,18 @@ use sqlx::PgPool;
 use crate::routes::{course_routes, general_routes};
 use crate::state::AppState;
 
-#[path = "../iter2/handlers.rs"]
+#[path = "../iter4/handlers.rs"]
 mod handlers;
-#[path = "../iter2/routes.rs"]
+#[path = "../iter4/routes.rs"]
 mod routes;
-#[path = "../iter2/state.rs"]
+#[path = "../iter4/state.rs"]
 mod state;
-#[path = "../iter2/models.rs"]
+#[path = "../iter4/models.rs"]
 mod models;
+#[path = "../iter4/db_access.rs"]
+mod db_access;
+#[path = "../iter4/errors.rs"]
+mod errors;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
@@ -34,7 +38,8 @@ async fn main() -> io::Result<()> {
         App::new()
             .app_data(shared_data.clone())
             .configure(general_routes)
-            .service(web::scope("/v1")
+            .configure(course_routes)
+            .service(web::scope("/api/v1")
                 .configure(course_routes)
             )
     };

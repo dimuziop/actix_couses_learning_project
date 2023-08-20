@@ -16,3 +16,6 @@ env_logger = "0.10.0"
 dotenv = "0.15.0"
 sqlx = {version = "0.7.1", features = ["postgres", "runtime-tokio-native-tls", "macros", "chrono", "uuid"]}
 openssl = {version = "0.10.55", features = ["vendored"]}
+
+[dev-dependencies]
+serde_json = "1"

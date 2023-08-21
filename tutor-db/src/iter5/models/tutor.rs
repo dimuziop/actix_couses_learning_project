@@ -16,7 +16,7 @@ pub struct Tutor {
     pub deleted_at: Option<NaiveDateTime>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct CreateTutorDto {
     pub name: String,
     pub pic_url: String,

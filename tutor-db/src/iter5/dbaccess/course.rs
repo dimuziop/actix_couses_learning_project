@@ -118,7 +118,7 @@ pub async fn update_course(pool: &PgPool, tutor_id: Uuid, course_id: Uuid, updat
                 language = $7,
                 level = $8,
                 updated_at = $9
-        WHERE tutor_id = $10 AND id = $11 and deleted_at is null
+        WHERE tutor_id = $10 AND id = $11 AND deleted_at is null
         returning
                 id,
                 tutor_id,

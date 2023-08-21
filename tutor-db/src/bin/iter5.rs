@@ -4,11 +4,13 @@ use actix_web::{App, HttpServer, web};
 use dotenv::dotenv;
 use log::{debug, error};
 use sqlx::PgPool;
-use crate::routes::{course_routes, general_routes};
+use crate::routes::{course_routes, general_routes, tutor_routes};
 use crate::state::AppState;
 
 #[path = "../iter5/handlers/mod.rs"]
 mod handlers;
+#[path = "../iter5/services/mod.rs"]
+mod services;
 #[path = "../iter5/routes.rs"]
 mod routes;
 #[path = "../iter5/state.rs"]
@@ -38,9 +40,9 @@ async fn main() -> io::Result<()> {
         App::new()
             .app_data(shared_data.clone())
             .configure(general_routes)
-            .configure(course_routes)
             .service(web::scope("/api/v1")
                 .configure(course_routes)
+                .configure(tutor_routes)
             )
     };
 

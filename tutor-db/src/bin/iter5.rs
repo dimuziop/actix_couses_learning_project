@@ -4,6 +4,7 @@ use actix_web::{App, HttpServer, web};
 use dotenv::dotenv;
 use log::{debug, error};
 use sqlx::PgPool;
+use crate::errors::EzyTutorError;
 use crate::routes::{course_routes, general_routes, tutor_routes};
 use crate::state::AppState;
 
@@ -39,6 +40,9 @@ async fn main() -> io::Result<()> {
     let app = move || {
         App::new()
             .app_data(shared_data.clone())
+            .app_data(web::JsonConfig::default().error_handler(|_e,_| {
+                EzyTutorError::InvalidInput("Please provide a valid JSON input".to_string()).into()
+            }))
             .configure(general_routes)
             .service(web::scope("/api/v1")
                 .configure(course_routes)

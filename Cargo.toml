@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace]
-members = ["tutor-db"]
+members = ["tutor-db", "tutor-web-app-ssr"]
 
 [dependencies]
 actix-web = "4.3.1"

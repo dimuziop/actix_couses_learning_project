@@ -1,0 +1,9 @@
+@layer utilities {
+    .content-auto {
+        content-visibility: auto;
+    }
+}
+
+body {
+    background-color: black;
+}
